@@ -1,0 +1,42 @@
+#!/bin/bash
+
+
+DOCKER_REPO="vijaythirumalareddy335"
+
+# Build and push FirstApplication
+cd firstmicroservice
+mvn clean package
+docker build -t $vijaythirumalareddy335/first-application:latest .
+docker push $vijaythirumalareddy335/first-application:latest
+cd ..
+
+# Build and push SecondApplication
+cd secondmicroservice
+mvn clean package
+docker build -t $vijaythirumalareddy335/second-application:latest .
+docker push $vijaythirumalareddy335/second-application:latest
+cd ..
+
+# Start Minikube
+minikube start
+
+# Use Minikube's Docker daemon
+eval $(minikube -p minikube docker-env)
+
+# Apply Kubernetes manifests
+kubectl apply -f firstmicroservice.yaml
+kubectl apply -f secondmicroservice.yaml
+
+# Wait for deployments to be ready
+kubectl rollout status deployment/first-application
+kubectl rollout status deployment/second-application
+
+# Print responses from applications
+FIRST_APP_URL=$(minikube service first-application --url)
+SECOND_APP_URL=$(minikube service second-application --url)
+
+echo "Firstmicroservice response:"
+curl $FIRST_APP_URL/hello
+
+echo "secondmicroservice response:"
+curl $SECOND_APP_URL/reverse
