@@ -1,0 +1,35 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: second-application
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: second-application
+  template:
+    metadata:
+      labels:
+        app: second-application
+    spec:
+      containers:
+      - name: second-application
+        image: vijaythirumalareddy335/second-application:latest
+        ports:
+        - containerPort: 8081
+        env:
+        - name: FirstApplication.url
+          value: "http://localhost:8081/hello"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: second-application
+spec:
+  selector:
+    app: second-application
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8081
